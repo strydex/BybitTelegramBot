@@ -13,10 +13,17 @@ dp = Dispatcher(storage=MemoryStorage())
 
 # Словарь для отслеживания состояния пользователей
 user_states = {}
+last_message_time = {} # Переменная для отслеживания последнего сообщения
+message_count = {} # Переменная для отслеживания количества сообщений ботом (он не должен учитывать /start - /stop, не парься)
 monitoring_task = None
 
 # Инициализация клиента Bybit
 client = BybitClient(config.BYBIT_API_KEY, config.BYBIT_API_SECRET)
+
+# Интервал между сообщениями в секундах
+MESSAGE_INTERVAL = 2 # Каждые 2 секунды отправляет сообщение, МЕНЯЙ НА ЛЮБОЕ В СЕКУНДАХ, т.е, 3600 секунд, это вроде час , ну и так дальше.
+# Лимит сообщений в день 
+DAILY_MESSAGE_LIMIT = 3 # Лимит сообщений бота, т.е, он отправит только 3 алерта в день.
 
 async def start_monitoring():
     global monitoring_task
@@ -48,17 +55,31 @@ async def stop(message: types.Message):
 
 async def monitor_market():
     while True:
+        current_time = time.time()
         for user_id, is_active in user_states.items():
             if is_active:
-                tickers = client.get_tickers()
-                for ticker in tickers:
-                    symbol = ticker['symbol']
-                    price_change = client.get_price_change(symbol)
-                    if abs(price_change) > config.PRICE_CHANGE_THRESHOLD:
-                        message = f"🚨<b>Crypto Alert!</b>🚨\n\n<b>Symbol</b>: {symbol}<b>\nPrice Change</b>: {price_change:.2f}%"
-                        await bot.send_message(user_id, message)
-                        prices = [float(ticker['last_price'])]  # Здесь можно добавить больше данных для графика
+                if user_id not in last_message_time or current_time - last_message_time[user_id] >= MESSAGE_INTERVAL:
+                    if message_count[user_id]['count'] < DAILY_MESSAGE_LIMIT:
+                        tickers = client.get_tickers()
+                        for ticker in tickers:
+                            symbol = ticker['symbol']
+                            price_change = client.get_price_change(symbol)
+                            if abs(price_change) > config.PRICE_CHANGE_THRESHOLD:
+                                message = f"🚨<b>Crypto Alert!</b>🚨\n\n<b>Symbol:</b> {symbol}\n<b>Price Change:</b> {price_change:.2f}%"
+                                await bot.send_message(user_id, message)
+                                last_message_time[user_id] = current_time
+                                message_count[user_id]['count'] += 1
+                                message_count[user_id]['limit_reached'] = False
+                                break  # Отправляем только одно сообщение за интервал времени
+                    else:
+                        reset_time = message_count[user_id]['reset_time']
+                        if datetime.now() >= reset_time:
+                            message_count[user_id] = {'count': 0, 'reset_time': datetime.now() + timedelta(days=1), 'limit_reached': False}
+                        elif not message_count[user_id]['limit_reached']:
+                            await bot.send_message(user_id, "Это последние новости на сегодня, в данный момент лимит получения новостей достигнут.")
+                            message_count[user_id]['limit_reached'] = True
         await asyncio.sleep(config.CHECK_INTERVAL)
+
 
 @dp.message(F.text)
 async def handle_message(message: types.Message):
