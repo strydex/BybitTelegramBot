@@ -6,7 +6,7 @@ import config
 def send_message(text):
     url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendMessage"
     data = {
-        'chat_id': config.TELEGRAM_CHAT_ID,
+        'chat_id': config.TELEGRAM_CHANNEL_ID,
         'text': text,
         'parse_mode': 'Markdown'
     }
@@ -16,7 +16,7 @@ def send_message(text):
 def send_photo(photo_path, caption):
     url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendPhoto"
     data = {
-        'chat_id': config.TELEGRAM_CHAT_ID,
+        'chat_id': config.TELEGRAM_CHANNEL_ID,
         'caption': caption,
         'parse_mode': 'Markdown'
     }
