@@ -6,24 +6,27 @@ import matplotlib.pyplot as plt
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.client.bot import DefaultBotProperties
+import time
+from datetime import datetime, timedelta
 
 TOKEN = config.TELEGRAM_BOT_TOKEN
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 dp = Dispatcher(storage=MemoryStorage())
 
-# Словарь для отслеживания состояния пользователей
+# Словарь для отслеживания состояния пользователей, времени последней отправки сообщения и количества сообщений
 user_states = {}
-last_message_time = {} # Переменная для отслеживания последнего сообщения
-message_count = {} # Переменная для отслеживания количества сообщений ботом (он не должен учитывать /start - /stop, не парься)
+last_message_time = {}
+message_count = {}
 monitoring_task = None
 
 # Инициализация клиента Bybit
 client = BybitClient(config.BYBIT_API_KEY, config.BYBIT_API_SECRET)
 
-# Интервал между сообщениями в секундах
-MESSAGE_INTERVAL = 2 # Каждые 2 секунды отправляет сообщение, МЕНЯЙ НА ЛЮБОЕ В СЕКУНДАХ, т.е, 3600 секунд, это вроде час , ну и так дальше.
-# Лимит сообщений в день 
-DAILY_MESSAGE_LIMIT = 3 # Лимит сообщений бота, т.е, он отправит только 3 алерта в день.
+# Интервал между сообщениями в секундах (5 минут = 300 секунд)
+MESSAGE_INTERVAL = 2
+# Лимит сообщений в день
+DAILY_MESSAGE_LIMIT = 3
 
 async def start_monitoring():
     global monitoring_task
@@ -43,6 +46,7 @@ async def stop_monitoring():
 async def start(message: types.Message):
     user_id = message.from_user.id
     user_states[user_id] = True  # Отмечаем, что бот активен для этого пользователя
+    message_count[user_id] = {'count': 0, 'reset_time': datetime.now() + timedelta(days=1), 'limit_reached': False}
     await message.reply("Бот начал работу!")
     await start_monitoring()
 
@@ -79,7 +83,6 @@ async def monitor_market():
                             await bot.send_message(user_id, "Это последние новости на сегодня, в данный момент лимит получения новостей достигнут.")
                             message_count[user_id]['limit_reached'] = True
         await asyncio.sleep(config.CHECK_INTERVAL)
-
 
 @dp.message(F.text)
 async def handle_message(message: types.Message):
