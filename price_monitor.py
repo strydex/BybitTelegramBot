@@ -8,7 +8,7 @@ from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 
 TOKEN = config.TELEGRAM_BOT_TOKEN
-bot = Bot(token=TOKEN)
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 dp = Dispatcher(storage=MemoryStorage())
 
 # Словарь для отслеживания состояния пользователей
@@ -55,7 +55,7 @@ async def monitor_market():
                     symbol = ticker['symbol']
                     price_change = client.get_price_change(symbol)
                     if abs(price_change) > config.PRICE_CHANGE_THRESHOLD:
-                        message = f"🚨Crypto Alert!🚨\n\n**Symbol: {symbol}**\nPrice Change: {price_change:.2f}%"
+                        message = f"🚨<b>Crypto Alert!</b>🚨\n\n<b>Symbol</b>: {symbol}<b>\nPrice Change</b>: {price_change:.2f}%"
                         await bot.send_message(user_id, message)
                         prices = [float(ticker['last_price'])]  # Здесь можно добавить больше данных для графика
         await asyncio.sleep(config.CHECK_INTERVAL)
