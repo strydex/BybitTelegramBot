@@ -2,7 +2,7 @@
 
 This is a Telegram bot that monitors the price changes of cryptocurrencies on Bybit and sends notifications to a Telegram channel.
 
-## Installation on VPS
+## VPS Installation 
 
 1. Clone the repository from GitHub:
 
