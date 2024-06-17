@@ -24,18 +24,20 @@ pip3 install -r requirements.txt
 ```
 
 4. Get a Telegram bot token from [@BotFather](https://telegram.me/BotFather) in Telegram.
+   
+5. Add your newly-created bot to channel members and make it an Administrator of the your TG channel. Give it permission to send messages into the channel.
 
-5. Get the Telegram channel ID. Follow the instructions [here](https://support.autochartist.com/en/knowledgebase/article/how-to-find-the-channel-id-of-your-telegram-channel) to find the channel ID.
+6. Get the Telegram channel ID. Follow the instructions [here](https://support.autochartist.com/en/knowledgebase/article/how-to-find-the-channel-id-of-your-telegram-channel) to find the channel ID.
 
-6. Change the bot token, API keys, Telegram channel ID, check interval, and price change threshold in `config.py`.
+7. Change the bot token, API keys, Telegram channel ID, check interval, and price change threshold in `config.py`.
 
-7. Run the bot with the following command:
+8. Run the bot with the following command:
 
 ```
 python3 price_monitor.py
 ```
 
-8. To run the bot in the background and automatically restart it if it crashes, you can use a process manager like [PM2](https://pm2.io/blog/2018/09/19/Manage-Python-Processes) or Supervisor.
+9. To run the bot in the background and automatically restart it if it crashes, you can use a process manager like [PM2](https://pm2.io/blog/2018/09/19/Manage-Python-Processes) or Supervisor.
 
 ## Usage
 
