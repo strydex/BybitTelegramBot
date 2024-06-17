@@ -1,6 +1,5 @@
-# bybit_client.py
-
 import requests
+import random
 
 class BybitClient:
     def __init__(self, api_key, api_secret):
@@ -12,7 +11,9 @@ class BybitClient:
         endpoint = '/v2/public/tickers'
         url = self.base_url + endpoint
         response = requests.get(url)
-        return response.json()['result']
+        tickers = response.json()['result']
+        random.shuffle(tickers)  # Shuffle the list of tickers
+        return tickers
 
     def get_price_change(self, symbol):
         endpoint = '/v2/public/tickers'
