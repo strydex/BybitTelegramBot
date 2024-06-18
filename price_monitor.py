@@ -19,9 +19,9 @@ dp = Dispatcher(storage=MemoryStorage())
 client = BybitClient(config.BYBIT_API_KEY, config.BYBIT_API_SECRET)
 
 # Интервал между сообщениями в секундах (5 минут = 300 секунд)
-MESSAGE_INTERVAL = 300
+MESSAGE_INTERVAL = 600
 # Лимит сообщений в день
-DAILY_MESSAGE_LIMIT = 30
+DAILY_MESSAGE_LIMIT = 25
 
 # Устанавливаем временную зону
 timezone = pytz.timezone('Europe/Moscow')
@@ -51,8 +51,8 @@ async def monitor_market(last_message_time, message_count, message_count_reset_t
         await asyncio.sleep(config.CHECK_INTERVAL)
 
 async def main():
-    # Запускаем поллинг
-    polling_task = asyncio.create_task(dp.start_polling(bot))
+    # Запускаем поллинг с пропуском обновлений
+    polling_task = asyncio.create_task(dp.start_polling(bot, skip_updates=True))
     # Запускаем мониторинг рынка
     monitoring_task = asyncio.create_task(monitor_market(datetime.now(timezone), 0, datetime.now(timezone) + timedelta(days=1)))
     # Ждем завершения обеих задач
