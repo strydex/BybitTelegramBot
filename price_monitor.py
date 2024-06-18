@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import pytz
 
 TOKEN = config.TELEGRAM_BOT_TOKEN
-bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'), timeout=30)
 dp = Dispatcher(storage=MemoryStorage())
 
 # Инициализация клиента Bybit
