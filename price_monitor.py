@@ -32,23 +32,25 @@ DAILY_MESSAGE_LIMIT = 25
 timezone = pytz.timezone('Europe/Moscow')
 
 async def monitor_market(last_message_time, message_count, message_count_reset_time, last_ticker=None):
+    logging.info(f"monitor_market called with last_message_time={last_message_time}, message_count={message_count}, message_count_reset_time={message_count_reset_time}, last_ticker={last_ticker}")
     while True:
         current_time = datetime.now(timezone)
         if current_time - last_message_time >= timedelta(seconds=MESSAGE_INTERVAL):
             if message_count < DAILY_MESSAGE_LIMIT:
                 try:
                     tickers = client.get_tickers()
-                    random_ticker = random.choice(tickers)
-                    symbol = random_ticker['symbol']
-                    price_change = client.get_price_change(symbol)
-                    if abs(price_change) > config.PRICE_CHANGE_THRESHOLD and symbol != last_ticker:
-                        message = f"🚨<b>Crypto Alert!</b>🚨\n\n<b>Тикер:</b> {symbol}\n<b>Изменение цены:</b> {price_change:.2f}%"
-                        await bot.send_message(chat_id=config.TELEGRAM_CHANNEL_ID, text=message, parse_mode='HTML')
-                        last_message_time = current_time
-                        message_count += 1
-                        last_ticker = symbol
+                    for ticker in tickers:
+                        symbol = ticker['symbol']
+                        price_change = client.get_price_change(symbol)
+                        logging.info(f"Price change for {symbol}: {price_change:.2f}%")
+                        if abs(price_change) > config.PRICE_CHANGE_THRESHOLD and symbol != last_ticker:
+                            message = f"🚨<b>Crypto Alert!</b>🚨\n\n<b>Тикер:</b> {symbol}\n<b>Изменение цены:</b> {price_change:.2f}%"
+                            await bot.send_message(chat_id=config.TELEGRAM_CHANNEL_ID, text=message, parse_mode='HTML')
+                            last_message_time = current_time
+                            message_count += 1
+                            last_ticker = symbol
                 except Exception as e:
-                    print(f"An error occurred: {e}")
+                    logging.error(f"An error occurred: {e}")
             else:
                 if current_time >= message_count_reset_time:
                     message_count = 0
