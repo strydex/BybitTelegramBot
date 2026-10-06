@@ -12,8 +12,9 @@ class BybitClient:
         url = self.base_url + endpoint
         response = requests.get(url)
         tickers = response.json()['result']
-        random.shuffle(tickers)  # Shuffle the list of tickers
-        return tickers
+        positive_tickers = [ticker for ticker in tickers if self.get_price_change(ticker['symbol']) > 0]  # Filter out tickers with negative price changes
+        random.shuffle(positive_tickers)  # Shuffle the list of positive tickers
+        return positive_tickers
 
     def get_price_change(self, symbol):
         endpoint = '/v2/public/tickers'
